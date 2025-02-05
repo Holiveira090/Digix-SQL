@@ -27,6 +27,15 @@
             "username": "postgres",
             "name": "aula3",
             "database": "Aula3"
+        },
+        {
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "Aula4",
+            "database": "Aula4",
+            "username": "postgres"
         }
     ]
 }
