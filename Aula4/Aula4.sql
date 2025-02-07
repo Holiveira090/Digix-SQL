@@ -150,17 +150,17 @@ INSERT INTO HORARIO_TRABALHO_FUNCIONARIO (HORARIO_IDHORARIO, FUNCIONARIO_IDFUNCI
 (4, 4, 4),
 (5, 5, 5); 
 
--- 1
+-- 1 Retornar a média dos salários dos funcionários.
 SELECT AVG(SALARIO) FROM funcionario;
 
--- 2
+-- 2 Listar os funcionários e suas funções, incluindo aqueles sem função definida.
 SELECT F.NOME AS FUNCIONARIO, FU.NOME AS FUNCAO
 FROM FUNCIONARIO F
 JOIN HORARIO_TRABALHO_FUNCIONARIO HT ON F.IDFUNCIONARIO = HT.FUNCIONARIO_IDFUNCIONARIO
 JOIN FUNCAO FU ON HT.FUNCAO_IDFUNCAO = FU.IDFUNCAO;
 
 
--- 3
+-- 3 Retornar o nome de todos os funcionários que possuem o mesmo horário de trabalho que algum outro funcionário.
 SELECT H.HORARIO, STRING_AGG(F.NOME, ', ') AS FUNCIONARIOS
 FROM HORARIO_TRABALHO_FUNCIONARIO HT
 JOIN FUNCIONARIO F 
@@ -170,45 +170,45 @@ JOIN HORARIO H
 GROUP BY H.HORARIO
 HAVING COUNT(HT.FUNCIONARIO_IDFUNCIONARIO) > 1;
 
--- 4
+-- 4 Encontrar filmes que foram exibidos em pelo menos duas salas diferentes.
 SELECT F.NOMEBR AS FILME_BRA, F.NOMEEN AS FILME_ENG, COUNT(DISTINCT FE.SALA_IDSALA) AS NUM_SALAS
 FROM FILME_EXIBIDO_SALA FE
 JOIN FILME F ON FE.FILME_ID_FILME = F.ID_FILME
 GROUP BY F.ID_FILME
 HAVING COUNT(DISTINCT FE.SALA_IDSALA) > 1;
 
--- 5
+-- 5 Listar os filmes e seus respectivos gêneros, garantindo que não haja duplicatas.
 SELECT F.NOMEBR AS FILME_BRA, F.NOMEEN AS FILME_ENG, G.NOME AS GENERO
 FROM FILME F
 JOIN GENERO G ON F.GENERO_IDGENERO = G.IDGENERO;
 
--- 6
+-- 6 Encontrar os filmes que receberam prêmios e que tiveram exibição em pelo menos uma sala.
 SELECT F.NOMEBR AS FILME_BRA, F.NOMEEN AS FILME_ENG
 FROM FILME F
 JOIN filme_has_premiacao FH ON F.id_filme = FH.filme_id_filme
 WHERE FH.ganhou = TRUE;
 
--- 7
+-- 7 Listar os filmes que não receberam nenhum prêmio.
 SELECT F.NOMEBR AS FILME_BRA, F.NOMEEN AS FILME_ENG
 FROM FILME F
 JOIN filme_has_premiacao FH ON F.id_filme = FH.filme_id_filme
 WHERE FH.ganhou = FALSE;
 
--- 8
+-- 8 Exibir os diretores que dirigiram pelo menos dois filmes.
 SELECT D.NOME AS DIRETOR
 FROM diretor D
 JOIN FILME F ON F.diretor_iddiretor = D.iddiretor
 GROUP BY D.NOME
 HAVING COUNT(F.ID_FILME) > 1;
 
--- 9
+-- 9 Listar os funcionários e os horários que trabalham, ordenados pelo horário mais cedo.
 SELECT F.NOME, H.HORARIO
 FROM funcionario F, horario H
 JOIN horario_trabalho_funcionario HT ON H.IDHORARIO = HT.HORARIO_IDHORARIO
 WHERE HT.FUNCIONARIO_IDFUNCIONARIO = F.IDFUNCIONARIO
 ORDER BY H.HORARIO ASC;
 
--- 10
+-- 10 Listar os filmes que foram exibidos na mesma sala em horários diferentes.
 SELECT F.NOMEBR AS FILME_PT, F.NOMEEN AS FILME_EN, S.NOME AS SALA, COUNT(DISTINCT H.HORARIO) AS NUMERO_DE_HORARIOS
 FROM filme_exibido_sala FE
 JOIN FILME F ON FE.FILME_ID_FILME = F.ID_FILME
@@ -217,21 +217,21 @@ JOIN HORARIO H ON FE.HORARIO_IDHORARIO = H.IDHORARIO
 GROUP BY F.ID_FILME, S.IDSALA
 HAVING COUNT(DISTINCT H.HORARIO) > 1;
 
--- 11
+-- 11 Unir os diretores e os funcionários em uma única lista de pessoas.
 SELECT F.NOME AS LISTAPESSOAS
 FROM funcionario F
 UNION
 SELECT D.NOME AS LISTAPESSOAS
 FROM diretor D;
 
--- 12
+-- 12 Exibir todas as funções diferentes que os funcionários exercem e a quantidade de funcionários em cada uma.
 SELECT FU.NOME AS FUNCAO, COUNT(DISTINCT HT.FUNCIONARIO_IDFUNCIONARIO) AS QUANTIDADE_FUNCIONARIOS
 FROM HORARIO_TRABALHO_FUNCIONARIO HT
 JOIN FUNCIONARIO F ON HT.FUNCIONARIO_IDFUNCIONARIO = F.IDFUNCIONARIO
 JOIN FUNCAO FU ON HT.FUNCAO_IDFUNCAO = FU.IDFUNCAO
 GROUP BY FU.NOME;
 
--- 13
+-- 13 Encontrar os filmes que foram exibidos em salas com capacidade superior à média de todas as salas.
 SELECT F.NOMEBR AS FILME, S.NOME AS SALA, S.CAPACIDADE
 FROM FILME_EXIBIDO_SALA FE
 JOIN FILME F ON FE.FILME_ID_FILME = F.ID_FILME
@@ -239,12 +239,12 @@ JOIN SALA S ON FE.SALA_IDSALA = S.IDSALA
 WHERE S.CAPACIDADE > (SELECT AVG(CAPACIDADE) FROM SALA)
 ORDER BY S.CAPACIDADE DESC;
 
--- 14
+-- 14 Calcular o salário anual dos funcionários (considerando 12 meses).
 SELECT F.NOME, F.SALARIO * 12 AS SALARIO_ANUAL
 FROM FUNCIONARIO F;
 
--- 15
-SELECT S.NOME AS SALA, S.CAPACIDADE, COUNT(FE.FILME_ID_FILME) AS NUMERO_DE_FILMES_EXIBIDOS
+-- 15 Exibir a relação entre a capacidade da sala e o número total de filmes exibidos nela.
+SELECT S.NOME AS SALA, S.CAPACIDADE, COUNT(FE.FILME_ID_FILME) AS TOTAL_FILMES, (COUNT(FE.FILME_ID_FILME) / NULLIF(S.CAPACIDADE, 0)) AS FILMES_POR_ASSENTO
 FROM SALA S
-JOIN FILME_EXIBIDO_SALA FE ON S.IDSALA = FE.SALA_IDSALA
-GROUP BY S.IDSALA, S.NOME, S.CAPACIDADE;
+LEFT JOIN FILME_EXIBIDO_SALA FE ON S.IDSALA = FE.SALA_IDSALA
+GROUP BY S.idsala, S.capacidade;
