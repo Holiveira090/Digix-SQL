@@ -55,6 +55,16 @@
             "name": "exercicioEdificacao",
             "database": "ExEdificacao",
             "username": "postgres"
+        },
+        {
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
+            "askForPassword": true,
+            "driver": "PostgreSQL",
+            "name": "Aula6",
+            "database": "Aula6",
+            "username": "postgres"
         }
     ]
 }
