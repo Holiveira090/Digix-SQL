@@ -260,24 +260,21 @@ $$ LANGUAGE PLPGSQL;
 SELECT OBTER_HORAS_TRABALHADAS(123);
 
 -- 8. Função com Exception que retorna o salário de um empregado dado o CPF
-CREATE OR REPLACE FUNCTION OBTER_SALARIO_EXCEPT(CPF_EMPREGADO INTEGER) 
-RETURNS FLOAT AS $$
+CREATE or replace FUNCTION get_salario_cpf(cpf_empregado INT) RETURNS FLOAT as $$
 DECLARE
-    SalarioE FLOAT;
+    Salario_a FLOAT;
 BEGIN
     BEGIN
-        SELECT Salario INTO SalarioE 
-        FROM Empregado 
-        WHERE CPF = CPF_EMPREGADO;
+        select Salario INTO salario_a from Empregado where CPF = cpf_empregado;
+        
     EXCEPTION
-        WHEN NO_DATA_FOUND THEN
-            RAISE NOTICE 'NENHUM REGISTRO ENCONTRADO PARA O CPF %', CPF_EMPREGADO;
-            RETURN NULL;
+        WHEN OTHERS THEN
+            RAISE notice 'Ca não encontrado';
     END;
 
-    RETURN SalarioE;
+    RETURN Salario_a;
 END;
-$$ LANGUAGE PLPGSQL;
+$$ LANGUAGE plpgsql;
 
-SELECT OBTER_SALARIO_EXCEPT(123);
+SELECT get_salario_cpf(123);
 
