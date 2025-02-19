@@ -39,6 +39,8 @@ insert into Software values (2, 'Linux', 50, 1, 2);
 insert into Software values (3, 'Windows', 200, 4, 3);
 insert into Software values (4, 'Linux', 100, 2, 4);
 insert into Software values (5, 'Linux', 1000, 2, 5);
+insert into Software values (6, 'Linux', 10000, 2, 1);
+insert into Software values (7, 'Linux', 100000, 2, 1);
 
 
 -- 1. Crie uma função chamada Espaco_Disponivel que recebe o ID da máquina e
@@ -188,21 +190,33 @@ BEGIN
 END;
 $$ LANGUAGE PLPGSQL;
 
-
 SELECT media_recursos();
-
-
-
-
-
-
-
-
 
 -- 7. Crie uma procedure chamada Diagnostico_Maquina que faz uma avaliação
 -- completa de uma maquina e sugere um upgrade se os recursos dela nao forem
 -- suficientes para rodar os softwares instalados.
+CREATE OR REPLACE FUNCTION Diagnostico_Maquina (IDM INTEGER) RETURNS VARCHAR AS $$
+DECLARE
+    MEMORIA_M INTEGER;
+    MEMORIA_S INTEGER;
+BEGIN
+    SELECT M.HARDDISK, COALESCE(SUM(S.HARDDISK), 0)
+    INTO MEMORIA_M, MEMORIA_S
+    FROM maquina M
+    JOIN software S ON M.id_maquina = S.Fk_Maquina
+    WHERE M.id_maquina = IDM
+    GROUP BY m.harddisk;
 
--- 1. Crie uma procedure chamada Diagnostico_Maquina que faz uma avaliação
--- completa de uma máquina e sugere um upgrade se os recursos dela não forem
--- suficientes para rodar os softwares instalados
+    IF MEMORIA_M IS NULL OR MEMORIA_S IS NULL THEN
+        RETURN 'MÁQUINA OU SOFTWARE NÃO ENCONTRADOS';
+    END IF;
+
+    IF MEMORIA_S > MEMORIA_M THEN
+        RETURN 'PRECISA DE UPGRADE';
+    ELSE
+        RETURN 'NÃO PRECISA DE UPGRADE';
+    END IF;
+END;
+$$ LANGUAGE PLPGSQL;
+
+SELECT Diagnostico_Maquina (1)
