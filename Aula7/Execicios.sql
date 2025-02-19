@@ -166,7 +166,7 @@ BEGIN
 END;
 $$ LANGUAGE PLPGSQL;
 
-CALL Transferir_Software(2, 2, 1);
+CALL Transferir_Software(2, 2, 3);
 SELECT * FROM software;
 
 -- 6. Crie uma função Media_Recursos que retorna a média de Memória RAM e
@@ -195,28 +195,66 @@ SELECT media_recursos();
 -- 7. Crie uma procedure chamada Diagnostico_Maquina que faz uma avaliação
 -- completa de uma maquina e sugere um upgrade se os recursos dela nao forem
 -- suficientes para rodar os softwares instalados.
-CREATE OR REPLACE FUNCTION Diagnostico_Maquina (IDM INTEGER) RETURNS VARCHAR AS $$
-DECLARE
-    MEMORIA_M INTEGER;
-    MEMORIA_S INTEGER;
-BEGIN
-    SELECT M.HARDDISK, COALESCE(SUM(S.HARDDISK), 0)
-    INTO MEMORIA_M, MEMORIA_S
-    FROM maquina M
-    JOIN software S ON M.id_maquina = S.Fk_Maquina
-    WHERE M.id_maquina = IDM
-    GROUP BY m.harddisk;
 
-    IF MEMORIA_M IS NULL OR MEMORIA_S IS NULL THEN
-        RETURN 'MÁQUINA OU SOFTWARE NÃO ENCONTRADOS';
-    END IF;
+create or Replace Procedure Diagnostico_Maquina(Id_Maquina1 integer) as $$
+declare 
+    Total_Ram_Requerida integer;
+    Total_HardDisk_Requerido integer;
+    Ram_Ataul integer;
+    HardDisk_Ataul integer;
+    Ram_Upgrade integer;
+    HardDisk_Upgrade integer;
+begin
+    -- Obetr a soma dos requisitos minimos dos sofwares instalados na maquina
+    select 
+        coalesce(sum(Memoria_Ram), 0),
+        coalesce(sum(HardDisk), 0) 
+    into
+        Total_Ram_Requerida,
+        Total_HardDisk_Requerido
+    from
+        Software
+    where
+        Fk_Maquina = Id_Maquina1;
+    
+    -- Obter a quantidade de ram e harddisk atuais
+    select 
+        Memoria_Ram,
+        HardDisk 
+    into
+        Ram_Ataul,
+        HardDisk_Ataul
+    from
+        Maquina
+    where
+        Id_Maquina = Id_Maquina1;
 
-    IF MEMORIA_S > MEMORIA_M THEN
-        RETURN 'PRECISA DE UPGRADE';
-    ELSE
-        RETURN 'NÃO PRECISA DE UPGRADE';
-    END IF;
-END;
-$$ LANGUAGE PLPGSQL;
+    --  Se a maquina não for encontrada, lançar um erro
+    if not found then
+        raise notice 'Maquina não encontrada';
+    end if;
 
-SELECT Diagnostico_Maquina (1)
+    -- Verficar se a maquina tem recursos suficientes
+    if Ram_Ataul >= Total_HardDisk_Requerido and HardDisk_Ataul >= Total_HardDisk_Requerido then
+        raise notice 'Maquina % tem recursos suficientes e não precisa de upgrade', Id_Maquina1;
+    else
+        -- Calcula a nescessidade do upgrade
+        Ram_Upgrade := Greatest(0, Total_Ram_Requerida - Ram_Ataul); -- ele ta retornando o maior valor
+        HardDisk_Upgrade := Greatest(0, Total_HardDisk_Requerido - HardDisk_Ataul);  -- esse 0 é para não retornar valores negativos
+
+        raise notice 'Maquna % precisa de upgrade', Id_Maquina1;
+
+        -- Sugere upgrade de Ram, se nescessario
+        if Ram_Upgrade > 0 then
+            raise notice 'Sugere upgrade de % GB de Ram', Ram_Upgrade;
+        end if;
+
+        -- Sugere upgrade de HardDisk, se nescessario
+        if HardDisk_Upgrade > 0 then
+            raise notice 'Sugere upgrade de % GB de HardDisk', HardDisk_Upgrade;
+        end if;
+    end if;
+end;
+$$ language plpgsql;
+
+CALL diagnostico_maquina(1);
