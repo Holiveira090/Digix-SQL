@@ -154,7 +154,6 @@ SELECT * FROM compras_produtos;
 SELECT * FROM vendas;
 SELECT * FROM vendas_produtos;
 
------------------------- HENRIQUE ------------------------
 
 -- 4.1
 SELECT P.NOME AS PRODUTO, E.QUANTIDADE
@@ -189,7 +188,6 @@ FROM PRODUTOS P
 JOIN estoque E ON P.ID = E.fk_produto
 WHERE E.quantidade < 12;
 
------------------------- RODRIGO ------------------------
 
 -- 5.1
 CREATE VIEW vw_relatorio AS
@@ -222,7 +220,6 @@ JOIN
 
     select * from vw_estoque_atual;
 
------------------------- GRAVENA ------------------------
 
 -- 6.1
 create or replace procedure sp_registrar_compra(idCompra int ,quantidadeProd int,fkProduto int) as $$ 
@@ -279,7 +276,6 @@ $$ LANGUAGE plpgsql;
 
 select fn_percentual_vendas_produto(6);
 
------------------------- OLSZEWSKI ------------------------
 
 CREATE OR REPLACE FUNCTION FN_CHECK_CLIENT_TYPE()
 RETURNS TRIGGER AS $$
@@ -385,7 +381,6 @@ FOR EACH ROW
 EXECUTE PROCEDURE FN_ATUALIZAR_ESTOQUE_COMPRA();
 
 
------------------------- LIDER ------------------------
 
 -- 7.3
 create table Monitoramento_Banco(
